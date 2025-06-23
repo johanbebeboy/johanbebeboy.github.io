@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mario Kart 64 - fleckon & johanbebeboy</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #121212, #0a0a0a);
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #ff8800;
+      font-weight: 400;
+      font-size: 28px;
+      text-shadow: 0 0 10px rgba(255, 136, 0, 0.3);
+    }
+
+    canvas {
+      width: 640px;
+      height: 480px;
+      border: 2px solid #ff8800;
+      background: black;
+      box-shadow: 0 0 20px rgba(255, 136, 0, 0.2);
+    }
+
+    p, label {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: 15px;
+    }
+
+    input[type="file"] {
+      background: #222;
+      color: #ff8800;
+      border: 1px solid #444;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    input[type="file"]::file-selector-button {
+      background: #ff8800;
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mario Kart 64</h1>
+    <p>by fleckon & johanbebeboy</p>
+  </header>
+  <canvas id="screen" width="640" height="480"></canvas>
+  <label for="romInput">Choose a ROM file (.z64):</label>
+  <input type="file" id="romInput" accept=".z64,.n64,.bin" />
+
+  <script src="js/js64.min.js"></script>
+  <script>
+    const canvas = document.getElementById("screen");
+    const romInput = document.getElementById("romInput");
+
+    romInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const arrayBuffer = await file.arrayBuffer();
+      if (typeof loadN64Buffer === "function") {
+        loadN64Buffer(arrayBuffer, canvas);
+      } else {
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "white";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("Emulator not loaded.", 180, 240);
+      }
+    });
+  </script>
+</body>
+</html>
