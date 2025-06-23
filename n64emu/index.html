@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mario Kart 64 - fleckon & johanbebeboy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
@@ -30,18 +30,37 @@
       text-shadow: 0 0 10px rgba(255, 136, 0, 0.3);
     }
 
-    iframe {
-      width: 960px;
-      height: 720px;
+    #screen {
+      width: 640px;
+      height: 480px;
       border: 2px solid #ff8800;
       background: black;
       box-shadow: 0 0 20px rgba(255, 136, 0, 0.2);
     }
 
-    p {
+    label, p {
       font-size: 14px;
       color: #aaa;
       margin-top: 15px;
+    }
+
+    input[type="file"] {
+      background: #222;
+      color: #ff8800;
+      border: 1px solid #444;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    input[type="file"]::file-selector-button {
+      background: #ff8800;
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -51,10 +70,33 @@
     <p>by fleckon & johanbebeboy</p>
   </header>
 
-  <iframe
-    src="https://web.libretro.com/?core=mupen64plus_next"
-    allowfullscreen
-    loading="lazy">
-  </iframe>
+  <canvas id="screen" width="640" height="480"></canvas>
+
+  <label for="romInput">Choose a ROM file (.z64):</label>
+  <input type="file" id="romInput" accept=".z64,.n64,.v64,.bin" />
+
+  <script src="js/n64.min.js"></script>
+  <script>
+    const canvas = document.getElementById("screen");
+    const input = document.getElementById("romInput");
+
+    input.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const arrayBuffer = await file.arrayBuffer();
+      const romData = new Uint8Array(arrayBuffer);
+
+      if (typeof N64JS === "undefined" || !N64JS.loadRomFromBuffer) {
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ff8800";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Emulator failed to load.", 150, 240);
+        return;
+      }
+
+      N64JS.loadRomFromBuffer(romData, { canvas });
+    });
+  </script>
 </body>
 </html>
