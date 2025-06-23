@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleckon & Johanbeboy Media Player</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #121212 0%, #0a0a0a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(10, 10, 10, 0.9);
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .vlc-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff8800 0%, #ff5500 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            margin-right: 15px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(255, 136, 0, 0.5);
+        }
+        
+        .vlc-logo::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            height: 40px;
+            background: rgba(10, 10, 10, 0.9);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: #ff8800;
+            text-shadow: 0 0 10px rgba(255, 136, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 3px;
+            letter-spacing: 0.5px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .media-container {
+            flex: 3;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .video-placeholder {
+            flex: 1;
+            background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-placeholder::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,136,0,0.05) 0%, rgba(255,136,0,0) 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .video-placeholder-content {
+            text-align: center;
+            z-index: 1;
+            padding: 20px;
+        }
+        
+        .video-placeholder-icon {
+            font-size: 80px;
+            color: rgba(255, 136, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .video-placeholder-text {
+            color: #666;
+            font-size: 18px;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            color: #ff8800;
+            font-weight: 500;
+        }
+        
+        .controls {
+            background: rgba(15, 15, 15, 0.95);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #333;
+        }
+        
+        .control-btn {
+            background: rgba(40, 40, 40, 0.8);
+            border: none;
+            color: #e0e0e0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 136, 0, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .play-btn {
+            background: rgba(255, 136, 0, 0.3);
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+        
+        .progress-container {
+            flex: 1;
+            margin: 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 35%;
+            background: #ff8800;
+            border-radius: 3px;
+        }
+        
+        .time {
+            color: #888;
+            font-size: 14px;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        
+        .volume-icon {
+            margin-right: 10px;
+            color: #888;
+        }
+        
+        .volume-bar {
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .volume-level {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 70%;
+            background: #ff8800;
+            border-radius: 3px;
+        }
+        
+        .sidebar {
+            flex: 1;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-title {
+            color: #ff8800;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .media-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .media-item {
+            padding: 12px 15px;
+            background: rgba(30, 30, 30, 0.6);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .media-item:hover {
+            background: rgba(50, 50, 50, 0.6);
+            border-left: 3px solid #ff8800;
+        }
+        
+        .media-item.active {
+            background: rgba(40, 30, 20, 0.8);
+            border-left: 3px solid #ff8800;
+        }
+        
+        .media-icon {
+            margin-right: 12px;
+            color: #ff8800;
+            font-size: 20px;
+        }
+        
+        .media-info {
+            flex: 1;
+        }
+        
+        .media-name {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .media-duration {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .footer {
+            background: rgba(10, 10, 10, 0.9);
+            padding: 15px 25px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #333;
+        }
+        
+        .user-message {
+            color: #ff8800;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <div class="vlc-logo"></div>
+            <div>
+                <div class="title">Fleckon & Johanbeboy Media Player</div>
+                <div class="subtitle">VLC Style Player • Dark Theme</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="media-container">
+            <div class="video-placeholder">
+                <div class="video-placeholder-content">
+                    <div class="video-placeholder-icon">🎬</div>
+                    <div class="video-placeholder-text">
+                        Drag and drop media files or select from the playlist to start playback. 
+                        <span class="highlight">Fleckon & Johanbeboy's personal media player</span> 
+                        with VLC-inspired design.
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn">⏮</button>
+                <button class="control-btn play-btn">▶</button>
+                <button class="control-btn">⏭</button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="time">1:45 / 5:20</div>
+                </div>
+                
+                <div class="volume-container">
+                    <div class="volume-icon">🔊</div>
+                    <div class="volume-bar">
+                        <div class="volume-level"></div>
+                    </div>
+                </div>
+                
+                <button class="control-btn">⛶</button>
+                <button class="control-btn">⋮</button>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="sidebar-title">Media Playlist</div>
+            <div class="media-list">
+                <div class="media-item active">
+                    <div class="media-icon">🎥</div>
+                    <div class="media-info">
+                        <div class="media-name">Vacation Highlights.mp4</div>
+                        <div class="media-duration">12:45 • 1080p</div>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-icon">🎵</div>
+                    <div class="media-info">
+                        <div class="media-name">Johanbeboy's Playlist.m3u</div>
+                        <div class="media-duration">45 tracks • 3.2 hours</div>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-icon">🎥</div>
+                    <div class="media-info">
+                        <div class="media-name">Gaming Session Highlights.mkv</div>
+                        <div class="media-duration">24:18 • 720p</div>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-icon">🎵</div>
+                    <div class="media-info">
+                        <div class="media-name">Fleckon's Favorite Tracks.mp3</div>
+                        <div class="media-duration">32 tracks • 2.1 hours</div>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-icon">🎥</div>
+                    <div class="media-info">
+                        <div class="media-name">Movie Night - Action Film.avi</div>
+                        <div class="media-duration">1:45:22 • 1080p</div>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-icon">🎵</div>
+                    <div class="media-info">
+                        <div class="media-name">Chill Vibes Mix.mp3</div>
+                        <div class="media-duration">18 tracks • 1.5 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div>Designed for <span class="user-message">Fleckon and Johanbeboy</span> • VLC-Style Media Player • Dark Theme</div>
+    </div>
+
+    <script>
+        // Add interactivity to the player
+        document.addEventListener('DOMContentLoaded', function() {
+            const playBtn = document.querySelector('.play-btn');
+            const mediaItems = document.querySelectorAll('.media-item');
+            let isPlaying = false;
+            
+            // Play/Pause button functionality
+            playBtn.addEventListener('click', function() {
+                isPlaying = !isPlaying;
+                playBtn.textContent = isPlaying ? '⏸' : '▶';
+                
+                if (isPlaying) {
+                    playBtn.style.background = 'rgba(255, 136, 0, 0.6)';
+                } else {
+                    playBtn.style.background = 'rgba(255, 136, 0, 0.3)';
+                }
+            });
+            
+            // Media item selection
+            mediaItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    mediaItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Update the main display to show selected media
+                    const mediaName = this.querySelector('.media-name').textContent;
+                    document.querySelector('.video-placeholder-text').innerHTML = 
+                        `Now playing: <span class="highlight">${mediaName}</span><br>
+                        Select different media from the playlist or use player controls.`;
+                });
+            });
+            
+            // Simulate progress bar movement when playing
+            setInterval(() => {
+                if (isPlaying) {
+                    const progressBar = document.querySelector('.progress');
+                    const timeDisplay = document.querySelector('.time');
+                    
+                    // Get current width and increase by 0.1%
+                    let width = parseFloat(progressBar.style.width || '35');
+                    width = (width + 0.1) % 100;
+                    progressBar.style.width = width + '%';
+                    
+                    // Update time display
+                    const currentMins = Math.floor(width / 100 * 320 / 60);
+                    const currentSecs = Math.floor(width / 100 * 320 % 60);
+                    timeDisplay.textContent = 
+                        `${currentMins}:${currentSecs < 10 ? '0' + currentSecs : currentSecs} / 5:20`;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
